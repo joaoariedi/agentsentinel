@@ -16,7 +16,7 @@ AgentSentinel is a comprehensive security framework for AI agents, providing pro
 | 1 | Rust Core & Input Shield | ✅ Complete | 100% |
 | 2 | Behavior Monitor (Python) | ✅ Complete | 100% |
 | 3 | Infrastructure Monitor | ✅ Complete | 95% |
-| 4 | Red Team Suite | ✅ Complete | 100% |
+| 4 | Red Team Suite | ✅ Complete | 90% |
 | 5 | Solana Registry | ✅ Complete | 90% |
 | 6 | SDKs (Python/Node.js) | 🚧 In Progress | 40% |
 | 7 | API & Integration | ✅ Complete | 95% |
@@ -27,235 +27,525 @@ AgentSentinel is a comprehensive security framework for AI agents, providing pro
 
 ### Completed
 - [x] Cargo workspace structure
-- [x] `agentsentinel-core` crate
-  - [x] `ThreatLevel` enum (None, Low, Medium, High, Critical)
-  - [x] `ThreatCategory` enum (7 categories)
-  - [x] `Threat` struct with builder pattern
-  - [x] `ThreatAssessment` struct
-  - [x] `ShieldConfig` configuration
-  - [x] Error types with `thiserror`
-- [x] `agentsentinel-input-shield` crate
-  - [x] Aho-Corasick pattern matcher (O(n) complexity)
-  - [x] 110+ injection patterns
-  - [x] Canary token system
-  - [x] `InputShield` main struct
-  - [x] Global `analyze()` and `should_block()` functions
+- [x] `agentsentinel-core` crate with shared types
+- [x] `agentsentinel-input-shield` crate with 110+ patterns
+- [x] Aho-Corasick O(n) pattern matching
+- [x] Canary token system
 - [x] Unit tests (32 passing)
-- [x] Doc tests
 - [x] Performance benchmarks (~18μs average)
 
-### TODO
-- [ ] Add more patterns for emerging attack vectors
-- [ ] Semantic analysis beyond pattern matching
-- [ ] ML-based detection (optional feature)
+### Code Quality Assessment
+**Strengths:**
+- Clean separation between core types and shield implementation
+- Thread-safe global instance with `once_cell::Lazy`
+- Good use of builder pattern for `Threat` construction
+- Comprehensive pattern coverage across all threat categories
+
+**Areas for Improvement:**
+- Pattern matching is case-insensitive but doesn't handle unicode normalization
+- No support for regex patterns (only literal strings)
+- Risk score calculation is simplistic (max + multi-threat bonus)
+
+### Enhancements TODO
+
+#### High Priority
+- [ ] **Unicode normalization** - Normalize input before scanning to catch homoglyph attacks
+  ```rust
+  // Example: "ⅰgnore" (Roman numeral) vs "ignore"
+  use unicode_normalization::UnicodeNormalization;
+  let normalized = input.nfkc().collect::<String>();
+  ```
+- [ ] **Regex pattern support** - Add optional regex patterns for complex matching
+  ```rust
+  pub struct PatternMatcher {
+      literal_automaton: AhoCorasick,
+      regex_patterns: Vec<(Regex, PatternMetadata)>,
+  }
+  ```
+- [ ] **Configurable patterns** - Load patterns from YAML/JSON config files
+  ```rust
+  pub fn load_patterns_from_file(path: &Path) -> Result<Vec<PatternDef>>
+  ```
+
+#### Medium Priority
+- [ ] **Semantic similarity** - Add embedding-based detection for paraphrased attacks
+- [ ] **Context-aware analysis** - Consider conversation history for multi-turn attacks
+- [ ] **Async API** - Add async versions of `analyze()` for non-blocking usage
+- [ ] **Streaming analysis** - Analyze input as it streams in (for real-time protection)
+- [ ] **Pattern versioning** - Track pattern version for reproducibility
+- [ ] **False positive feedback** - API to report false positives for pattern tuning
+
+#### Low Priority
+- [ ] **ML-based detection** - Optional feature flag for ML classifier
+- [ ] **Language detection** - Detect input language for localized patterns
+- [ ] **Compression detection** - Detect and decompress encoded payloads
 
 ---
 
 ## Phase 2: Behavior Monitor (Python) ✅
 
 ### Completed
-- [x] `src/agentsentinel/behavior_monitor/`
-  - [x] `models.py` - ActionType (17 types), RiskLevel, AgentAction
-  - [x] `baseline.py` - ActionStats, BehaviorBaseline, BaselineManager
-  - [x] `anomaly.py` - AnomalyDetector with 6 anomaly checks
-  - [x] `tx_simulator.py` - Solana transaction simulation
-  - [x] `monitor.py` - BehaviorMonitor orchestrator
-- [x] Circuit breaker logic
-- [x] Async approval callbacks
-- [x] Alert handler system
+- [x] Action logging with full audit trail
+- [x] Behavioral baseline profiling
+- [x] 6-point anomaly detection
+- [x] Circuit breaker protection
+- [x] Transaction simulation stub
 - [x] Unit tests (62 passing)
 
-### TODO
-- [ ] Persistent baseline storage (currently in-memory)
-- [ ] Redis/database backend for production
-- [ ] More sophisticated ML anomaly detection
-- [ ] Historical trend analysis
+### Code Quality Assessment
+**Strengths:**
+- Well-structured with clear separation of concerns
+- Comprehensive anomaly checks (action type, amount, destination, time, rate, critical)
+- Good use of Pydantic for data validation
+- Async-ready with approval callbacks
+
+**Areas for Improvement:**
+- Baselines are stored in-memory only (lost on restart)
+- Transaction simulator is a stub (needs real Solana RPC calls)
+- No support for custom anomaly rules
+- Fixed thresholds (no adaptive learning)
+
+### Enhancements TODO
+
+#### High Priority
+- [ ] **Persistent baseline storage** - Save baselines to disk/database
+  ```python
+  class BaselineStorage(Protocol):
+      async def save(self, agent_id: str, baseline: BehaviorBaseline) -> None
+      async def load(self, agent_id: str) -> Optional[BehaviorBaseline]
+  
+  # Implementations: FileStorage, RedisStorage, PostgresStorage
+  ```
+- [ ] **Real transaction simulation** - Implement actual Solana RPC calls
+  ```python
+  async def simulate(self, tx_base64: str) -> SimulationResult:
+      response = await self.client.post(self.rpc_url, json={
+          "jsonrpc": "2.0",
+          "method": "simulateTransaction",
+          "params": [tx_base64, {"encoding": "base64"}]
+      })
+  ```
+- [ ] **Scam address database** - Integrate with known scam address lists
+  ```python
+  class ScamDatabase:
+      async def is_scam_address(self, address: str) -> bool
+      async def update_from_source(self, source_url: str) -> None
+  ```
+
+#### Medium Priority
+- [ ] **Adaptive thresholds** - Learn optimal thresholds from data
+  ```python
+  def adjust_thresholds(self, false_positive_rate: float, false_negative_rate: float)
+  ```
+- [ ] **Custom anomaly rules** - Support user-defined rules
+  ```python
+  @dataclass
+  class AnomalyRule:
+      name: str
+      condition: Callable[[AgentAction, BehaviorBaseline], bool]
+      score_delta: float
+  ```
+- [ ] **Time-series anomaly detection** - Use ARIMA/Prophet for trend analysis
+- [ ] **Session correlation** - Detect coordinated attacks across sessions
+- [ ] **Velocity checks** - Track cumulative amounts over time windows
+- [ ] **Geo-IP analysis** - Flag unusual geographic patterns
+
+#### Low Priority
+- [ ] **ML anomaly detection** - Isolation Forest / Autoencoder models
+- [ ] **Graph-based analysis** - Build transaction graphs for pattern detection
+- [ ] **Replay attack detection** - Detect repeated action sequences
 
 ---
 
 ## Phase 3: Infrastructure Monitor ✅
 
 ### Completed
-- [x] `configs/osquery/agentsentinel.conf`
-  - [x] Agent process monitoring queries
-  - [x] Sensitive file access tracking
-  - [x] Network connection monitoring
-  - [x] Shell history analysis
-  - [x] Docker container tracking
-- [x] `configs/wazuh/rules/agentsentinel_rules.xml`
-  - [x] 12 custom rules (levels 6-15)
-  - [x] File integrity rules
-  - [x] Process monitoring rules
-  - [x] Network anomaly rules
-  - [x] Privilege escalation rules
-- [x] `configs/wazuh/decoders/agentsentinel_decoders.xml`
-- [x] `src/agentsentinel/infra_monitor/`
-  - [x] `osquery_client.py` - Socket + CLI fallback
-  - [x] `wazuh_client.py` - Async API client
-  - [x] `monitor.py` - Unified InfrastructureMonitor
-- [x] Setup scripts (`scripts/setup_*.sh`)
+- [x] OSquery client with socket + CLI fallback
+- [x] Wazuh API client (async)
+- [x] 12 custom Wazuh rules
+- [x] OSquery scheduled queries
+- [x] Unified InfrastructureMonitor class
+- [x] File integrity monitoring
+- [x] Network anomaly detection
+- [x] Process monitoring
 - [x] Unit tests (29 passing)
 
-### TODO
-- [ ] Integration tests with real Wazuh/OSquery instances
-- [ ] Kubernetes-specific monitoring rules
-- [ ] Cloud provider integrations (AWS CloudTrail, GCP Audit)
-- [ ] SIEM export formats (Splunk, ELK)
+### Code Quality Assessment
+**Strengths:**
+- Good fallback mechanism (socket → CLI for OSquery)
+- Async Wazuh client with proper error handling
+- Alert deduplication
+- Comprehensive suspicious port/process lists
+
+**Areas for Improvement:**
+- No Kubernetes/container-specific monitoring
+- Limited cloud provider support
+- No real-time event streaming
+- Wazuh rules could be more granular
+
+### Enhancements TODO
+
+#### High Priority
+- [ ] **Kubernetes monitoring** - Add k8s-specific queries and rules
+  ```python
+  def get_pod_security_events(self, namespace: str = "default"):
+      return self.osquery.query("""
+          SELECT * FROM kubernetes_pods 
+          WHERE security_context LIKE '%privileged%'
+      """)
+  ```
+- [ ] **Container escape detection** - Enhanced rules for container breakout
+  ```xml
+  <rule id="100060" level="15">
+      <match>nsenter|--privileged|/proc/1/root</match>
+      <description>Potential container escape attempt</description>
+  </rule>
+  ```
+- [ ] **Real-time event streaming** - WebSocket-based alert streaming
+  ```python
+  async def stream_alerts(self) -> AsyncGenerator[InfraAlert, None]:
+      async for event in self.wazuh.stream_events():
+          yield self._convert_to_alert(event)
+  ```
+
+#### Medium Priority
+- [ ] **Cloud provider integrations**
+  - AWS CloudTrail integration
+  - GCP Audit Log integration
+  - Azure Activity Log integration
+- [ ] **SIEM export formats** - Export alerts in standard formats
+  ```python
+  def export_to_splunk(self, alerts: List[InfraAlert]) -> str
+  def export_to_elastic(self, alerts: List[InfraAlert]) -> dict
+  def export_cef(self, alert: InfraAlert) -> str  # Common Event Format
+  ```
+- [ ] **File carving** - Extract and analyze suspicious file contents
+- [ ] **Memory forensics** - Integration with Volatility for memory analysis
+- [ ] **Network flow analysis** - Track data volumes per connection
+
+#### Low Priority
+- [ ] **eBPF integration** - Low-level kernel monitoring
+- [ ] **Yara rule support** - Malware signature scanning
+- [ ] **Threat intel feeds** - Integrate with MISP, AlienVault OTX
 
 ---
 
 ## Phase 4: Red Team Suite ✅
 
 ### Completed
-- [x] `src/agentsentinel/red_team/`
-  - [x] `payloads.py` - 50+ payloads across 8 categories
-    - [x] Instruction Override (8+)
-    - [x] Prompt Extraction (8+)
-    - [x] Role Manipulation (6+)
-    - [x] Context Injection (6+)
-    - [x] Encoding Bypass (6+)
-    - [x] Data Exfiltration (8+)
-    - [x] Multi-step Attacks (4+)
-    - [x] Jailbreaks (6+)
-  - [x] `scanner.py` - AgentScanner with async HTTP
-  - [x] `reporter.py` / `reports.py` - Report generation
-  - [x] `cli.py` - Command-line interface
+- [x] 51 injection payloads across 8 categories
+- [x] AgentScanner with async HTTP testing
+- [x] Vulnerability detection patterns
 - [x] Security scoring algorithm
-- [x] Markdown and JSON report formats
-- [x] Progress callbacks
+- [x] Report generation (markdown/JSON)
+- [x] CLI interface
 
-### TODO
-- [ ] Add pyproject.toml script entry point
-- [ ] More payloads (target: 100+)
-- [ ] Payload effectiveness tracking
-- [ ] Community payload contributions workflow
-- [ ] Scheduled/automated scanning
-- [ ] Comparison reports between scans
+### Code Quality Assessment
+**Strengths:**
+- Good categorization of payload types
+- Regex-based vulnerability detection
+- Progress callback support
+- Cancellation support
+
+**Areas for Improvement:**
+- Only 51 payloads (target was 100+)
+- No payload variants/mutations
+- Limited multi-step attack support
+- No evasion technique testing
+
+### Enhancements TODO
+
+#### High Priority
+- [ ] **Expand payload library to 100+**
+  - Add 10+ more instruction override variants
+  - Add 10+ more prompt extraction techniques
+  - Add encoding bypass variants (base64, hex, unicode)
+  - Add multi-language payloads (Spanish, Chinese, etc.)
+  
+- [ ] **Payload mutation engine** - Generate variants automatically
+  ```python
+  class PayloadMutator:
+      def mutate(self, payload: Payload) -> List[Payload]:
+          return [
+              self._add_typos(payload),
+              self._change_case(payload),
+              self._add_whitespace(payload),
+              self._unicode_substitute(payload),
+              self._synonym_replace(payload),
+          ]
+  ```
+
+- [ ] **Multi-step attack chains** - Test sequential attack patterns
+  ```python
+  @dataclass
+  class AttackChain:
+      steps: List[Payload]
+      success_condition: Callable[[List[str]], bool]
+  ```
+
+#### Medium Priority
+- [ ] **Evasion technique testing** - Test filter bypass methods
+  ```python
+  class EvasionTechniques:
+      @staticmethod
+      def token_splitting(text: str) -> str:
+          """Split tokens: 'ignore' -> 'ig' + 'nore'"""
+      @staticmethod  
+      def homoglyph_substitution(text: str) -> str:
+          """Replace chars with lookalikes"""
+      @staticmethod
+      def prompt_injection_via_markdown(text: str) -> str:
+          """Hide payload in markdown"""
+  ```
+- [ ] **Response semantic analysis** - Use embeddings to detect compliance
+- [ ] **Comparative benchmarking** - Compare results across agent versions
+- [ ] **Scheduled/automated scanning** - Cron-based security audits
+- [ ] **Payload effectiveness tracking** - Track which payloads work over time
+- [ ] **Custom payload upload** - Allow users to add their own payloads
+
+#### Low Priority
+- [ ] **Adversarial prompt generation** - Use LLM to generate new payloads
+- [ ] **Visual payload rendering** - Test image-based injection
+- [ ] **Audio payload testing** - Test speech-to-text injection
 
 ---
 
 ## Phase 5: Solana Registry ✅
 
 ### Completed
-- [x] `solana_registry/programs/agent_registry/`
-  - [x] `lib.rs` - Main program with all instructions
-  - [x] Account types (Agent, Auditor, Attestation, RegistryConfig)
-  - [x] SecurityScores struct
-  - [x] AttestationStatus enum
-- [x] Instructions implemented:
-  - [x] `initialize` - Registry setup
-  - [x] `register_agent` / `update_agent`
-  - [x] `register_auditor` / `verify_auditor`
-  - [x] `submit_attestation`
-  - [x] `dispute_attestation`
-  - [x] `update_admin` / `set_registration_paused`
-- [x] Events for all actions
-- [x] TypeScript SDK (`solana_registry/sdk/`)
-- [x] `Anchor.toml` configuration
+- [x] Agent account with metadata
+- [x] Auditor account with verification
+- [x] Attestation account with scores
+- [x] RegistryConfig for admin settings
+- [x] All core instructions implemented
+- [x] Events for indexing
+- [x] TypeScript SDK
 
-### TODO
-- [ ] Run `anchor build` to generate program keypair
-- [ ] Deploy to devnet
-- [ ] Deploy to mainnet
-- [ ] Update program ID in code
-- [ ] Integration tests with local validator
-- [ ] Frontend for registry browsing
-- [ ] Governance mechanism for admin changes
+### Code Quality Assessment
+**Strengths:**
+- Well-structured Anchor program
+- Comprehensive error codes
+- PDA derivation is clean
+- Good use of events for indexing
+
+**Areas for Improvement:**
+- No governance mechanism for admin changes
+- No staking/slashing for auditors
+- Reputation decay not implemented
+- No upgrade mechanism
+
+### Enhancements TODO
+
+#### High Priority
+- [ ] **Deploy to devnet** - Build and deploy with real program ID
+  ```bash
+  anchor build
+  anchor deploy --provider.cluster devnet
+  solana program show <PROGRAM_ID>
+  ```
+- [ ] **Update program ID** - Replace placeholder in code
+- [ ] **Integration tests** - Test with local validator
+  ```typescript
+  describe("agent_registry", () => {
+      it("registers an agent", async () => { ... });
+      it("submits attestation", async () => { ... });
+  });
+  ```
+
+#### Medium Priority
+- [ ] **Governance mechanism** - DAO for admin changes
+  ```rust
+  #[account]
+  pub struct Proposal {
+      pub proposer: Pubkey,
+      pub action: GovernanceAction,
+      pub votes_for: u64,
+      pub votes_against: u64,
+      pub deadline: i64,
+  }
+  ```
+- [ ] **Auditor staking** - Require stake to become auditor
+  ```rust
+  pub fn stake_as_auditor(ctx: Context<StakeAuditor>, amount: u64) -> Result<()>
+  pub fn slash_auditor(ctx: Context<SlashAuditor>, reason: String) -> Result<()>
+  ```
+- [ ] **Reputation decay** - Attestations lose weight over time
+- [ ] **Attestation expiry** - Auto-expire old attestations
+- [ ] **Multi-sig admin** - Require multiple signatures for admin actions
+- [ ] **Registry frontend** - Web UI for browsing registry
+
+#### Low Priority
+- [ ] **Cross-chain attestations** - Bridge attestations to other chains
+- [ ] **NFT badges** - Mint NFTs for high-scoring agents
+- [ ] **Bounty system** - Rewards for finding vulnerabilities
 
 ---
 
 ## Phase 6: SDKs 🚧
 
 ### Completed
-- [x] `crates/python/` structure
-  - [x] `Cargo.toml` with PyO3 dependencies
-  - [x] `src/lib.rs` - Basic bindings structure
-  - [x] `python/agentsentinel/__init__.py` - High-level API
-- [x] `crates/nodejs/` structure
-  - [x] `Cargo.toml` with NAPI-RS dependencies
-  - [x] `src/lib.rs` - Basic bindings structure
-  - [x] `index.ts` - TypeScript wrapper
-  - [x] `package.json`
+- [x] Python crate structure (`crates/python/`)
+- [x] Node.js crate structure (`crates/nodejs/`)
+- [x] Basic PyO3 bindings skeleton
+- [x] Basic NAPI-RS bindings skeleton
 
-### TODO
-- [ ] **Fix PyO3 Python 3.14 compatibility**
-  - Update PyO3 to latest version supporting 3.14
-  - Or use `PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1`
-- [ ] **Fix import paths in Python bindings**
-  - `agentsentinel_input_shield` module resolution
-  - `ShieldConfig` field mismatch (`log_all_inputs`)
-- [ ] **Fix NAPI-RS bindings**
-  - `napi_derive::napi` import resolution
-  - Add `napi` and `napi-derive` to dependencies
-- [ ] Build and test Python wheels
-- [ ] Build and test npm package
-- [ ] Publish to PyPI
-- [ ] Publish to npm
-- [ ] Cross-platform builds (Linux, macOS, Windows)
-- [ ] WASM build for browser usage
+### Known Issues
+1. **PyO3 Python 3.14 compatibility** - PyO3 0.20.3 doesn't support Python 3.14
+2. **Import path mismatches** - `agentsentinel_input_shield` module not found
+3. **Field mismatches** - `ShieldConfig` missing `log_all_inputs` field
+4. **NAPI import errors** - `napi_derive::napi` not resolving
+
+### Enhancements TODO
+
+#### Critical (Blocking)
+- [ ] **Fix PyO3 compatibility**
+  ```toml
+  # Update Cargo.toml
+  pyo3 = { version = "0.21", features = ["extension-module"] }
+  ```
+- [ ] **Fix import paths** - Align Python binding imports with actual module structure
+- [ ] **Fix field mismatches** - Update `ShieldConfig` to match core crate
+- [ ] **Add NAPI dependencies**
+  ```toml
+  [dependencies]
+  napi = "2"
+  napi-derive = "2"
+  ```
+
+#### High Priority
+- [ ] **Build Python wheels** - Create distributable packages
+  ```bash
+  cd crates/python
+  maturin build --release
+  maturin sdist
+  ```
+- [ ] **Build npm package** - Create distributable package
+  ```bash
+  cd crates/nodejs
+  npm run build
+  npm pack
+  ```
+- [ ] **Cross-platform builds** - CI for Linux, macOS, Windows
+- [ ] **Publish to PyPI** - `pip install agentsentinel`
+- [ ] **Publish to npm** - `npm install @agentsentinel/sdk`
+
+#### Medium Priority
+- [ ] **WASM build** - Browser-compatible build
+  ```bash
+  wasm-pack build crates/wasm --target web
+  ```
+- [ ] **Python type stubs** - Generate `.pyi` files for IDE support
+- [ ] **TypeScript definitions** - Generate `.d.ts` files
 
 ---
 
 ## Phase 7: API & Integration ✅
 
 ### Completed
-- [x] `src/agentsentinel/api/main.py` - FastAPI server
-  - [x] `/api/v1/analyze` - Input Shield analysis
-  - [x] `/api/v1/canary/generate` - Canary token generation
-  - [x] `/api/v1/canary/check` - Leak detection
-  - [x] `/api/v1/behavior/check` - Pre-action check
-  - [x] `/api/v1/behavior/complete/{action_id}`
-  - [x] `/api/v1/infra/scan` - Infrastructure scan
-  - [x] `/api/v1/redteam/scan` - Start security audit
-  - [x] `/api/v1/protect` - Unified protection endpoint
-  - [x] `/health` - Health check
+- [x] FastAPI server with lifespan management
+- [x] All core endpoints implemented
+- [x] Pydantic request/response models
 - [x] CORS middleware
-- [x] Pydantic models for request/response
-- [x] `Dockerfile`
-- [x] Demo scripts:
-  - [x] `demo/scenario_1_injection.py` - Prompt injection demo
-  - [x] `demo/scenario_2_behavior.py` - Behavioral anomaly demo
-  - [x] `demo/scenario_3_audit.py` - Red team audit demo
+- [x] OpenAPI documentation
+- [x] Demo scripts (3 scenarios)
+- [x] Dockerfile
 
-### TODO
-- [ ] Add FastAPI to pyproject.toml dependencies
-- [ ] API authentication (API keys, JWT)
-- [ ] Rate limiting
-- [ ] OpenAPI documentation improvements
-- [ ] WebSocket support for real-time alerts
-- [ ] Docker Compose for full stack
-- [ ] Kubernetes manifests
+### Code Quality Assessment
+**Strengths:**
+- Clean endpoint organization
+- Good use of FastAPI lifespan for component initialization
+- Comprehensive request/response models
+- CORS properly configured
+
+**Areas for Improvement:**
+- No authentication/authorization
+- No rate limiting
+- No request validation beyond Pydantic
+- Background tasks don't persist results
+
+### Enhancements TODO
+
+#### High Priority
+- [ ] **Authentication** - Add API key or JWT auth
+  ```python
+  from fastapi.security import APIKeyHeader
+  
+  api_key_header = APIKeyHeader(name="X-API-Key")
+  
+  async def verify_api_key(api_key: str = Security(api_key_header)):
+      if api_key not in valid_api_keys:
+          raise HTTPException(status_code=403)
+  ```
+- [ ] **Rate limiting** - Prevent abuse
+  ```python
+  from slowapi import Limiter
+  limiter = Limiter(key_func=get_remote_address)
+  
+  @app.post("/api/v1/analyze")
+  @limiter.limit("100/minute")
+  async def analyze_input(request: AnalyzeRequest):
+  ```
+- [ ] **Request logging** - Audit trail for API calls
+- [ ] **Health check improvements** - Include component status
+
+#### Medium Priority
+- [ ] **WebSocket support** - Real-time alerts
+  ```python
+  @app.websocket("/ws/alerts")
+  async def alert_stream(websocket: WebSocket):
+      await websocket.accept()
+      async for alert in infra_monitor.stream_alerts():
+          await websocket.send_json(alert.to_dict())
+  ```
+- [ ] **Batch endpoints** - Analyze multiple inputs at once
+- [ ] **Async background tasks** - Use Celery/ARQ for long-running scans
+- [ ] **Response caching** - Cache analysis results by input hash
+- [ ] **Metrics endpoint** - Prometheus-compatible metrics
+  ```python
+  @app.get("/metrics")
+  async def metrics():
+      return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+  ```
+
+#### Low Priority
+- [ ] **GraphQL API** - Alternative to REST
+- [ ] **gRPC support** - High-performance RPC
+- [ ] **SDK auto-generation** - Generate clients from OpenAPI spec
 
 ---
 
-## General TODOs
+## General Enhancements
 
 ### Testing
 - [ ] Set up pytest with virtual environment
 - [ ] CI/CD pipeline (GitHub Actions)
-- [ ] Integration tests
-- [ ] End-to-end tests
-- [ ] Performance benchmarks in CI
+- [ ] Integration tests with mocked services
+- [ ] End-to-end tests with real Solana devnet
+- [ ] Performance regression tests
+- [ ] Fuzzing for input validation
 
 ### Documentation
 - [ ] API reference (auto-generated from OpenAPI)
-- [ ] SDK usage guides
-- [ ] Deployment guide
-- [ ] Security best practices guide
+- [ ] Architecture decision records (ADRs)
+- [ ] Deployment guide (Docker, Kubernetes, bare metal)
+- [ ] Security hardening guide
+- [ ] Runbook for incident response
 - [ ] Video tutorials
 
 ### DevOps
-- [ ] GitHub Actions workflow
-- [ ] Automated releases
-- [ ] Version bumping
-- [ ] Changelog generation
+- [ ] GitHub Actions workflow for CI/CD
+- [ ] Automated releases with semantic versioning
+- [ ] Changelog generation from commits
+- [ ] Docker multi-arch builds
+- [ ] Helm chart for Kubernetes
+- [ ] Terraform modules for cloud deployment
 
-### Community
-- [ ] Contributing guide improvements
-- [ ] Issue templates
-- [ ] PR templates
-- [ ] Discord/community setup
-- [ ] Security disclosure process
+### Security
+- [ ] Security audit of Rust code
+- [ ] Dependency vulnerability scanning
+- [ ] SBOM generation
+- [ ] Signed releases
+- [ ] Bug bounty program
 
 ---
 
@@ -266,9 +556,9 @@ AgentSentinel is a comprehensive security framework for AI agents, providing pro
 **Workaround**: Set `PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1` or use Python 3.12
 **Fix**: Update PyO3 when 3.14 support is released
 
-### 2. Externally Managed Python Environment
-**Issue**: Arch Linux prevents system-wide pip installs (PEP 668)
-**Workaround**: Use virtual environments for all Python work
+### 2. Externally Managed Python Environment (PEP 668)
+**Issue**: Arch Linux prevents system-wide pip installs
+**Workaround**: Use virtual environments
 ```bash
 python -m venv venv
 source venv/bin/activate
@@ -278,62 +568,44 @@ pip install -e ".[dev]"
 ### 3. SDK Crates Excluded from Workspace
 **Issue**: Python and Node.js bindings have compilation errors
 **Status**: Temporarily excluded from Cargo workspace
-**Fix**: Resolve import paths and field mismatches in binding code
+**Fix**: Resolve import paths and field mismatches
+
+### 4. Transaction Simulator Stub
+**Issue**: `tx_simulator.py` doesn't make real RPC calls
+**Status**: Returns mock data
+**Fix**: Implement actual Solana RPC integration
 
 ---
 
-## Priority Tasks
+## Priority Roadmap
 
-### High Priority (For Hackathon Submission)
-1. [ ] Fix SDK bindings or document as future work
+### Phase 1: Hackathon Submission (Immediate)
+1. [x] Complete all core functionality
 2. [ ] Deploy Solana program to devnet
 3. [ ] Create demo video
-4. [ ] Polish README with badges and examples
+4. [ ] Polish README with examples
 5. [ ] Submit to Colosseum
 
-### Medium Priority (Post-Hackathon)
-1. [ ] Publish Python SDK to PyPI
-2. [ ] Publish Node.js SDK to npm
-3. [ ] Add more injection payloads
-4. [ ] Integration tests with real services
+### Phase 2: Beta Release (2 weeks)
+1. [ ] Fix SDK bindings
+2. [ ] Publish Python package to PyPI
+3. [ ] Publish Node.js package to npm
+4. [ ] Add authentication to API
+5. [ ] Integration tests
 
-### Low Priority (Future)
-1. [ ] ML-based detection
-2. [ ] Browser extension
-3. [ ] VS Code extension
-4. [ ] Enterprise features
+### Phase 3: Production Ready (1 month)
+1. [ ] Persistent baseline storage
+2. [ ] Real transaction simulation
+3. [ ] 100+ payload library
+4. [ ] Kubernetes monitoring
+5. [ ] Deploy Solana program to mainnet
 
----
-
-## File Structure
-
-```
-AgentSentinel/
-├── Cargo.toml                 # Rust workspace
-├── pyproject.toml             # Python project config
-├── Dockerfile                 # Container build
-├── README.md                  # Project overview
-├── CHANGELOG.md               # Version history
-├── crates/
-│   ├── core/                  # ✅ Shared Rust types
-│   ├── input-shield/          # ✅ Pattern matching engine
-│   ├── python/                # 🚧 PyO3 bindings
-│   └── nodejs/                # 🚧 NAPI-RS bindings
-├── src/agentsentinel/
-│   ├── behavior_monitor/      # ✅ Action logging & anomaly
-│   ├── infra_monitor/         # ✅ Wazuh/OSquery integration
-│   ├── red_team/              # ✅ Security testing suite
-│   ├── api/                   # ✅ FastAPI server
-│   └── input_shield/          # ✅ Python wrapper
-├── solana_registry/           # ✅ Anchor program
-├── configs/                   # ✅ OSquery/Wazuh configs
-├── demo/                      # ✅ Demo scripts
-├── tests/                     # ✅ Unit tests
-├── scripts/                   # ✅ Setup scripts
-└── docs/
-    ├── planning/              # ✅ Development phases
-    └── TODO.md                # This file
-```
+### Phase 4: Enterprise Features (3 months)
+1. [ ] Multi-tenant support
+2. [ ] SIEM integrations
+3. [ ] Custom rule engine
+4. [ ] SLA-backed monitoring
+5. [ ] Compliance reporting
 
 ---
 
@@ -347,6 +619,19 @@ To work on a TODO item:
 3. Fork and create a branch
 4. Submit a PR referencing the issue
 
+### Good First Issues
+- Add new injection payloads
+- Improve documentation
+- Add unit tests
+- Fix typos/formatting
+
+### Help Wanted
+- Cloud provider integrations
+- Kubernetes monitoring
+- ML anomaly detection
+- Frontend development
+
 ---
 
 *This document is maintained as part of the AgentSentinel project.*
+*Last code review: 2026-02-03 by Claude*
