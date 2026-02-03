@@ -609,9 +609,10 @@ poetry shell
 4. [x] Polish README with examples ✅
 5. [x] Add executive summary for general audience ✅
 6. [x] Create demo screenplay ✅
-7. [ ] Deploy Solana program to devnet (blocked on faucet)
-8. [ ] Record demo video
-9. [ ] Submit to hackathon
+7. [x] Create submission guide ✅ (`docs/HACKATHON_SUBMISSION.md`)
+8. [ ] Deploy Solana program to devnet (blocked on faucet)
+9. [ ] Record demo video
+10. [ ] Register agent + submit to Colosseum
 
 ### Phase 2: Beta Release (2 weeks)
 1. [ ] Fix Node.js SDK bindings (NAPI)

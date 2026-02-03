@@ -537,6 +537,7 @@ agentsentinel/
 ### Overview
 - [Executive Summary](./docs/EXECUTIVE_SUMMARY.md) - Non-technical overview
 - [Demo Screenplay](./docs/DEMO_SCREENPLAY.md) - Video recording guide
+- [Hackathon Submission](./docs/HACKATHON_SUBMISSION.md) - Colosseum submission guide
 - [TODO & Roadmap](./docs/TODO.md) - Implementation status
 
 ### Technical Docs
