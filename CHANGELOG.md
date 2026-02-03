@@ -14,6 +14,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Contributing guidelines
 - Open source strategy
 
+### Phase 1: Rust Core & Input Shield ✅
+- `agentsentinel-core` crate with shared types:
+  - `ThreatLevel` enum (None, Low, Medium, High, Critical)
+  - `ThreatCategory` enum (7 categories)
+  - `Threat` struct with builder pattern
+  - `ThreatAssessment` struct
+  - `ShieldConfig` configuration
+  - Comprehensive error types
+- `agentsentinel-input-shield` crate:
+  - Aho-Corasick pattern matcher (O(n) complexity)
+  - 90+ injection patterns across all threat categories
+  - Canary token system for prompt leak detection
+  - `InputShield` main API
+  - Global `analyze()` and `should_block()` functions
+- 32 unit tests, all passing
+- Doc tests for public APIs
+
 ---
 
 ## [0.1.0] - 2026-02-XX (Target: Hackathon Submission)
