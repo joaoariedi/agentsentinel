@@ -21,11 +21,68 @@ AI agents are gaining access to wallets and executing real transactions. A singl
 AgentSentinel provides comprehensive, multi-layered security for AI agents:
 
 ```
-User Input → [Input Shield] → [Behavior Monitor] → [Agent Action]
-                   ↓                    ↓
-            [Infra Monitor] ←──── [Alert Engine] ────→ [Solana Registry]
-                   ↓
-            [Wazuh + OSquery]
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         AgentSentinel Security Framework                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│   ┌──────────┐      ┌──────────────┐      ┌─────────────────┐               │
+│   │   User   │      │    Input     │      │    Behavior     │               │
+│   │  Input   │─────▶│    Shield    │─────▶│    Monitor      │               │
+│   │          │      │   (Rust)     │      │    (Python)     │               │
+│   └──────────┘      └──────┬───────┘      └────────┬────────┘               │
+│                            │                       │                         │
+│                            │ Threats               │ Anomalies               │
+│                            ▼                       ▼                         │
+│                     ┌─────────────────────────────────────┐                  │
+│                     │           Alert Engine              │                  │
+│                     │  • Correlate threats & anomalies    │                  │
+│                     │  • Trigger circuit breakers         │                  │
+│                     │  • Route to handlers                │                  │
+│                     └──────────────┬──────────────────────┘                  │
+│                                    │                                         │
+│              ┌─────────────────────┼─────────────────────┐                   │
+│              │                     │                     │                   │
+│              ▼                     ▼                     ▼                   │
+│   ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐           │
+│   │     Infra       │   │    Red Team     │   │     Solana      │           │
+│   │    Monitor      │   │     Suite       │   │    Registry     │           │
+│   │                 │   │                 │   │                 │           │
+│   │  ┌───────────┐  │   │  • 50+ payloads │   │  • Attestations │           │
+│   │  │  Wazuh    │  │   │  • Auto-scan    │   │  • Trust scores │           │
+│   │  │  Agent    │  │   │  • Reports      │   │  • On-chain     │           │
+│   │  └───────────┘  │   │                 │   │    verification │           │
+│   │  ┌───────────┐  │   └─────────────────┘   └─────────────────┘           │
+│   │  │  OSquery  │  │                                                        │
+│   │  │  Daemon   │  │                                                        │
+│   │  └───────────┘  │                                                        │
+│   └─────────────────┘                                                        │
+│                                                                              │
+│   ════════════════════════════════════════════════════════════════════════  │
+│                                                                              │
+│   ┌──────────────┐    ┌──────────────┐    ┌──────────────┐                  │
+│   │  Python SDK  │    │  Node.js SDK │    │   REST API   │                  │
+│   │  pip install │    │  npm install │    │  Port 8000   │                  │
+│   └──────────────┘    └──────────────┘    └──────────────┘                  │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                              Data Flow
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                              │
+│  User Input ──▶ Input Shield ──▶ Behavior Monitor ──▶ Agent Action          │
+│       │              │                  │                   │                │
+│       │              │ <100μs           │ Baseline          │                │
+│       │              │ 110+ patterns    │ Anomaly Score     │                │
+│       │              ▼                  ▼                   ▼                │
+│       │         ┌─────────┐       ┌──────────┐        ┌──────────┐          │
+│       │         │ BLOCK   │       │ APPROVE  │        │ EXECUTE  │          │
+│       │         │ or PASS │       │ or BLOCK │        │ & LOG    │          │
+│       │         └─────────┘       └──────────┘        └──────────┘          │
+│       │                                                     │                │
+│       └─────────────────────────────────────────────────────┘                │
+│                         Audit Trail → Solana Registry                        │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
