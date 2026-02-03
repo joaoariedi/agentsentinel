@@ -390,22 +390,22 @@ AgentSentinel is a comprehensive security framework for AI agents, providing pro
 - [x] Basic NAPI-RS bindings skeleton
 
 ### Known Issues
-1. **PyO3 Python 3.14 compatibility** - PyO3 0.20.3 doesn't support Python 3.14
-2. **Import path mismatches** - `agentsentinel_input_shield` module not found
-3. **Field mismatches** - `ShieldConfig` missing `log_all_inputs` field
-4. **NAPI import errors** - `napi_derive::napi` not resolving
+1. ~~**PyO3 Python 3.14 compatibility**~~ ✅ Fixed - Updated to PyO3 0.23 with ABI3 forward compatibility
+2. ~~**Import path mismatches**~~ ✅ Fixed - Module exports as `agentsentinel._core`
+3. ~~**Field mismatches**~~ ✅ Fixed - Updated bindings to match core crate
+4. **NAPI import errors** - `napi_derive::napi` not resolving (Node.js bindings pending)
 
 ### Enhancements TODO
 
 #### Critical (Blocking)
-- [ ] **Fix PyO3 compatibility**
+- [x] **Fix PyO3 compatibility** ✅ Done (2026-02-03)
   ```toml
-  # Update Cargo.toml
-  pyo3 = { version = "0.21", features = ["extension-module"] }
+  pyo3 = { version = "0.23", features = ["extension-module"] }
+  # Build with: PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1
   ```
-- [ ] **Fix import paths** - Align Python binding imports with actual module structure
-- [ ] **Fix field mismatches** - Update `ShieldConfig` to match core crate
-- [ ] **Add NAPI dependencies**
+- [x] **Fix import paths** ✅ Done - `agentsentinel._core` module
+- [x] **Fix field mismatches** ✅ Done
+- [ ] **Add NAPI dependencies** (Node.js SDK)
   ```toml
   [dependencies]
   napi = "2"
@@ -551,24 +551,22 @@ AgentSentinel is a comprehensive security framework for AI agents, providing pro
 
 ## Known Issues
 
-### 1. Python 3.14 Compatibility
+### 1. ~~Python 3.14 Compatibility~~ ✅ RESOLVED
 **Issue**: PyO3 0.20.3 doesn't support Python 3.14
-**Workaround**: Set `PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1` or use Python 3.12
-**Fix**: Update PyO3 when 3.14 support is released
+**Resolution**: Updated to PyO3 0.23 with `PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1`
 
 ### 2. Externally Managed Python Environment (PEP 668)
 **Issue**: Arch Linux prevents system-wide pip installs
-**Workaround**: Use virtual environments
+**Workaround**: Use poetry (configured in project)
 ```bash
-python -m venv venv
-source venv/bin/activate
-pip install -e ".[dev]"
+poetry install
+poetry shell
 ```
 
-### 3. SDK Crates Excluded from Workspace
+### 3. ~~SDK Crates Excluded from Workspace~~ ✅ PARTIALLY RESOLVED
 **Issue**: Python and Node.js bindings have compilation errors
-**Status**: Temporarily excluded from Cargo workspace
-**Fix**: Resolve import paths and field mismatches
+**Status**: Python crate re-enabled and working, Node.js still excluded
+**Remaining**: Fix Node.js NAPI bindings
 
 ### 4. Transaction Simulator Stub
 **Issue**: `tx_simulator.py` doesn't make real RPC calls
