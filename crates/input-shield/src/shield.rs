@@ -135,9 +135,10 @@ impl InputShield {
     ///
     /// # Returns
     ///
-    /// A tuple of (enhanced_prompt, token)
+    /// A tuple of (enhanced_prompt, token) where enhanced_prompt has the canary instruction appended
     pub fn embed_canary(&self, system_prompt: &str, context: &str) -> (String, String) {
-        self.canary_manager.write().embed_in_prompt(system_prompt, context)
+        let (instruction, token) = self.canary_manager.write().create_canary_instruction(context);
+        (format!("{}{}", system_prompt, instruction), token)
     }
 
     /// Checks LLM output for canary token leaks
