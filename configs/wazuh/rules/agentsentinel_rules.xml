@@ -1,0 +1,90 @@
+<!-- AgentSentinel Custom Wazuh Rules -->
+<group name="agentsentinel,">
+  
+  <!-- File Integrity Alerts -->
+  <rule id="100001" level="12">
+    <if_sid>550</if_sid>
+    <match>\.env|secrets|wallet|private_key</match>
+    <description>AgentSentinel: Sensitive configuration file modified</description>
+    <group>agentsentinel,file_integrity,critical</group>
+  </rule>
+  
+  <rule id="100002" level="15">
+    <if_sid>550</if_sid>
+    <match>wallet.*\.json|keypair.*\.json</match>
+    <description>AgentSentinel: Wallet file modified - potential compromise</description>
+    <group>agentsentinel,file_integrity,critical</group>
+  </rule>
+  
+  <!-- Process Alerts -->
+  <rule id="100010" level="10">
+    <decoded_as>osquery</decoded_as>
+    <field name="name">agent_processes</field>
+    <description>AgentSentinel: Agent process activity detected</description>
+    <group>agentsentinel,process,info</group>
+  </rule>
+  
+  <rule id="100011" level="14">
+    <decoded_as>osquery</decoded_as>
+    <field name="cmdline">curl.*\|.*sh|wget.*\|.*bash|base64.*-d</field>
+    <description>AgentSentinel: Suspicious command execution pattern</description>
+    <group>agentsentinel,process,critical</group>
+  </rule>
+  
+  <rule id="100012" level="12">
+    <decoded_as>osquery</decoded_as>
+    <field name="name">nc|ncat|netcat|socat</field>
+    <description>AgentSentinel: Network utility executed by agent</description>
+    <group>agentsentinel,process,high</group>
+  </rule>
+  
+  <!-- Network Alerts -->
+  <rule id="100020" level="8">
+    <decoded_as>osquery</decoded_as>
+    <field name="name">network_connections</field>
+    <field name="remote_port">^(4444|5555|6666|1337|31337)$</field>
+    <description>AgentSentinel: Connection to suspicious port</description>
+    <group>agentsentinel,network,high</group>
+  </rule>
+  
+  <rule id="100021" level="10">
+    <decoded_as>osquery</decoded_as>
+    <field name="name">network_connections</field>
+    <match>tor|onion|i2p</match>
+    <description>AgentSentinel: Connection to anonymization network</description>
+    <group>agentsentinel,network,high</group>
+  </rule>
+  
+  <rule id="100022" level="6">
+    <decoded_as>osquery</decoded_as>
+    <field name="name">network_connections</field>
+    <description>AgentSentinel: New outbound connection from agent</description>
+    <group>agentsentinel,network,info</group>
+  </rule>
+  
+  <!-- Privilege Escalation -->
+  <rule id="100030" level="12">
+    <if_sid>5401</if_sid>
+    <match>agent|python|node</match>
+    <description>AgentSentinel: Agent process attempted sudo</description>
+    <group>agentsentinel,privilege,high</group>
+  </rule>
+  
+  <!-- Data Exfiltration Indicators -->
+  <rule id="100040" level="14">
+    <decoded_as>osquery</decoded_as>
+    <field name="name">shell_history</field>
+    <match>curl.*-d.*key|wget.*key|curl.*POST.*wallet</match>
+    <description>AgentSentinel: Potential key exfiltration attempt</description>
+    <group>agentsentinel,exfiltration,critical</group>
+  </rule>
+  
+  <!-- Container Escape Attempts -->
+  <rule id="100050" level="15">
+    <decoded_as>osquery</decoded_as>
+    <match>/proc/1/root|nsenter|--privileged</match>
+    <description>AgentSentinel: Potential container escape attempt</description>
+    <group>agentsentinel,container,critical</group>
+  </rule>
+  
+</group>

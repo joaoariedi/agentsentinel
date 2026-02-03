@@ -1,0 +1,30 @@
+<!-- AgentSentinel Custom Wazuh Decoders -->
+
+<decoder name="agentsentinel-json">
+  <prematch>^{"agent_id":</prematch>
+  <plugin_decoder>JSON_Decoder</plugin_decoder>
+</decoder>
+
+<decoder name="agentsentinel-action">
+  <parent>agentsentinel-json</parent>
+  <regex>\"action_type\":\"(\w+)\"</regex>
+  <order>action_type</order>
+</decoder>
+
+<decoder name="agentsentinel-anomaly">
+  <parent>agentsentinel-json</parent>
+  <regex>\"anomaly_score\":([\d.]+)</regex>
+  <order>anomaly_score</order>
+</decoder>
+
+<decoder name="agentsentinel-process">
+  <parent>agentsentinel-json</parent>
+  <regex>\"process_name\":\"([^\"]+)\"</regex>
+  <order>process_name</order>
+</decoder>
+
+<decoder name="agentsentinel-network">
+  <parent>agentsentinel-json</parent>
+  <regex>\"remote_address\":\"([^\"]+)\".*\"remote_port\":(\d+)</regex>
+  <order>remote_address,remote_port</order>
+</decoder>

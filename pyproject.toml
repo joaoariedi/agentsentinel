@@ -45,6 +45,9 @@ full = [
     "agentsentinel[dev,wazuh]",
 ]
 
+[project.scripts]
+agentsentinel-redteam = "agentsentinel.red_team.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/joaoariedi/agentsentinel"
 Documentation = "https://github.com/joaoariedi/agentsentinel#readme"

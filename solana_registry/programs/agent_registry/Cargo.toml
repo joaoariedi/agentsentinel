@@ -1,0 +1,22 @@
+[package]
+name = "agent_registry"
+version = "0.1.0"
+description = "AgentSentinel On-Chain Security Registry for AI Agent Attestations"
+edition = "2021"
+authors = ["AgentSentinel Team"]
+license = "MIT"
+repository = "https://github.com/your-org/agentsentinel"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "agent_registry"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.30.1"
