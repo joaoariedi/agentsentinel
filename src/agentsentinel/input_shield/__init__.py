@@ -19,6 +19,8 @@ from .shield import (
     ThreatCategory,
     ThreatLevel,
     CanaryManager,
+    analyze,
+    should_block,
 )
 
 __all__ = [
@@ -29,4 +31,6 @@ __all__ = [
     "ThreatCategory",
     "ThreatLevel",
     "CanaryManager",
+    "analyze",
+    "should_block",
 ]
