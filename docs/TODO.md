@@ -587,20 +587,25 @@ pip install -e ".[dev]"
 5. [ ] Submit to Colosseum
 
 ### Phase 2: Beta Release (2 weeks)
-1. [ ] Fix SDK bindings
-2. [ ] Publish Python package to PyPI
-3. [ ] Publish Node.js package to npm
-4. [ ] Add authentication to API
-5. [ ] Integration tests
+1. [ ] Fix SDK bindings (Rust → Python/Node.js)
+2. [ ] Add authentication to API
+3. [ ] Integration tests
+4. [ ] Expand payload library to 100+
 
-### Phase 3: Production Ready (1 month)
-1. [ ] Persistent baseline storage
-2. [ ] Real transaction simulation
-3. [ ] 100+ payload library
-4. [ ] Kubernetes monitoring
-5. [ ] Deploy Solana program to mainnet
+### Phase 3: Package Publishing (1 month)
+1. [ ] Publish Python package to PyPI (`pip install agentsentinel`)
+2. [ ] Publish Node.js package to npm (`npm install @agentsentinel/sdk`)
+3. [ ] Set up GitHub Actions for automated releases
+4. [ ] Cross-platform wheel builds (Linux, macOS, Windows)
 
-### Phase 4: Enterprise Features (3 months)
+### Phase 4: Production Ready (2 months)
+1. [ ] Persistent baseline storage (Redis/PostgreSQL)
+2. [ ] Real Solana transaction simulation
+3. [ ] Kubernetes monitoring support
+4. [ ] Deploy Solana program to mainnet
+5. [ ] Cloud provider integrations (AWS, GCP, Azure)
+
+### Phase 5: Enterprise Features (3 months)
 1. [ ] Multi-tenant support
 2. [ ] SIEM integrations
 3. [ ] Custom rule engine

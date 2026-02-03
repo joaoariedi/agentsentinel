@@ -91,8 +91,6 @@ AgentSentinel provides comprehensive, multi-layered security for AI agents:
 
 ### Installation
 
-**From source (recommended for now):**
-
 ```bash
 # Clone the repository
 git clone https://github.com/joaoariedi/agentsentinel.git
@@ -104,13 +102,6 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install in development mode
 pip install -e ".[dev]"
-```
-
-**From PyPI (coming soon):**
-
-```bash
-# Not yet published - use source installation above
-pip install agentsentinel
 ```
 
 ### Python SDK
