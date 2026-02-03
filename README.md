@@ -4,7 +4,6 @@
 
 [![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=flat&logo=rust&logoColor=white)](https://www.rust-lang.org/)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
-[![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Solana](https://img.shields.io/badge/Solana-9945FF?style=flat&logo=solana&logoColor=white)](https://solana.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -13,7 +12,7 @@
 | Feature | Description |
 |---------|-------------|
 | 🚀 **~18μs Analysis** | High-performance Rust core with Aho-Corasick pattern matching |
-| 🎯 **100+ Payloads** | Comprehensive prompt injection detection across 8 categories |
+| 🎯 **128 Payloads** | Comprehensive prompt injection detection across 12 categories |
 | 🧠 **Behavior Baselines** | Learns normal agent patterns, detects anomalies |
 | 🔗 **On-Chain Attestations** | Solana registry for trust scores and security audits |
 | 🛡️ **Enterprise Ready** | Wazuh/OSquery integration for infrastructure monitoring |
@@ -58,7 +57,7 @@ AgentSentinel provides comprehensive, multi-layered security for AI agents:
 │   │     Infra       │   │    Red Team     │   │     Solana      │           │
 │   │    Monitor      │   │     Suite       │   │    Registry     │           │
 │   │                 │   │                 │   │                 │           │
-│   │  ┌───────────┐  │   │  • 100+ payloads│   │  • Attestations │           │
+│   │  ┌───────────┐  │   │  • 128 payloads │   │  • Attestations │           │
 │   │  │  Wazuh    │  │   │  • Auto-scan    │   │  • Trust scores │           │
 │   │  │  Agent    │  │   │  • Reports      │   │  • On-chain     │           │
 │   │  └───────────┘  │   │                 │   │    verification │           │
@@ -321,7 +320,7 @@ print(f"Alerts: {result.alerts}")
 ### 4. Red Team Suite
 Automated security auditing with 100+ injection payloads.
 
-- **100+ payloads** - All major attack categories including multi-language, encoding bypasses
+- **128 payloads** - All major attack categories including multi-language, encoding bypasses
 - **Automated scanning** - Test agents systematically  
 - **Security scoring** - Quantified security posture (0-100)
 - **Detailed reporting** - Markdown and JSON reports with remediation advice
@@ -535,6 +534,12 @@ agentsentinel/
 
 ## 📖 Documentation
 
+### Overview
+- [Executive Summary](./docs/EXECUTIVE_SUMMARY.md) - Non-technical overview
+- [Demo Screenplay](./docs/DEMO_SCREENPLAY.md) - Video recording guide
+- [TODO & Roadmap](./docs/TODO.md) - Implementation status
+
+### Technical Docs
 - [Development Plan](./docs/planning/00-OVERVIEW.md)
 - [Input Shield](./docs/planning/02-PHASE-1-INPUT-SHIELD.md)
 - [Behavior Monitor](./docs/planning/03-PHASE-2-BEHAVIOR-MONITOR.md)
@@ -545,11 +550,25 @@ agentsentinel/
 
 ---
 
-## 🏆 Colosseum Agent Hackathon
+## 🏆 Solana AI Hackathon
 
-Built for the first-ever Solana hackathon for AI agents.
+Built for the Solana AI Hackathon — securing the next generation of autonomous agents.
 
-**$100,000 in prizes** • **10 days to build** • **Agents compete, humans vote**
+### Current Status (Feb 2026)
+
+| Component | Status |
+|-----------|--------|
+| Rust Core | ✅ Complete (~18μs analysis) |
+| Python SDK | ✅ Complete (PyO3 bindings working) |
+| Input Shield | ✅ 110+ patterns |
+| Red Team Suite | ✅ 128 payloads |
+| Behavior Monitor | ✅ Baseline + anomaly detection |
+| Solana Registry | 🔄 Built, pending devnet deploy |
+| Node.js SDK | 📋 Planned |
+
+### Built With AI
+
+This project was developed with assistance from **Clawdbot** (Claude-based coding assistant), demonstrating the very use case we're protecting: AI agents building software.
 
 ---
 
