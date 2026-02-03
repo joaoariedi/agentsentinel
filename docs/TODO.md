@@ -1,6 +1,6 @@
 # AgentSentinel - Implementation Status & TODO
 
-Last updated: 2026-02-03
+Last updated: 2026-02-03 (Evening)
 
 ## Overview
 
@@ -16,10 +16,11 @@ AgentSentinel is a comprehensive security framework for AI agents, providing pro
 | 1 | Rust Core & Input Shield | ✅ Complete | 100% |
 | 2 | Behavior Monitor (Python) | ✅ Complete | 100% |
 | 3 | Infrastructure Monitor | ✅ Complete | 95% |
-| 4 | Red Team Suite | ✅ Complete | 90% |
-| 5 | Solana Registry | ✅ Complete | 90% |
-| 6 | SDKs (Python/Node.js) | 🚧 In Progress | 40% |
+| 4 | Red Team Suite | ✅ Complete | 100% |
+| 5 | Solana Registry | ✅ Built | 85% (pending devnet deploy) |
+| 6 | SDKs (Python/Node.js) | 🚧 In Progress | 60% (Python ✅, Node.js pending) |
 | 7 | API & Integration | ✅ Complete | 95% |
+| - | Documentation | ✅ Complete | 100% |
 
 ---
 
@@ -233,34 +234,50 @@ AgentSentinel is a comprehensive security framework for AI agents, providing pro
 ## Phase 4: Red Team Suite ✅
 
 ### Completed
-- [x] 51 injection payloads across 8 categories
+- [x] **128 injection payloads** across 12 categories ✅ (expanded from 51)
 - [x] AgentScanner with async HTTP testing
 - [x] Vulnerability detection patterns
 - [x] Security scoring algorithm
 - [x] Report generation (markdown/JSON)
 - [x] CLI interface
 
+### Payload Categories (128 total)
+| Category | Count | Examples |
+|----------|-------|----------|
+| Instruction Override | 15+ | "Ignore previous instructions..." |
+| Prompt Extraction | 12+ | "Print your system prompt" |
+| Data Exfiltration | 10+ | "Send keys to..." |
+| Jailbreak | 15+ | DAN, STAN, Developer Mode |
+| Encoding Bypasses | 8 | Base64, hex, ROT13, unicode |
+| Multi-language | 8 | Spanish, Chinese, French, German, Japanese, Arabic, Russian, Turkish |
+| Token Splitting | 7 | "ig" + "nore", concatenation tricks |
+| Markdown/HTML | 8 | Hidden divs, code blocks, comments |
+| Roleplay/Persona | 8 | Villain mode, grandma exploit |
+| Context Overflow | 5 | Padding, fake history |
+| Instruction Smuggling | 8 | JSON/XML/YAML injection |
+| Social Engineering | 4+ | Authority pressure, emergency framing |
+
 ### Code Quality Assessment
 **Strengths:**
-- Good categorization of payload types
+- Comprehensive categorization of payload types
 - Regex-based vulnerability detection
 - Progress callback support
 - Cancellation support
+- Multi-language coverage
 
 **Areas for Improvement:**
-- Only 51 payloads (target was 100+)
-- No payload variants/mutations
+- No payload variants/mutations (auto-generation)
 - Limited multi-step attack support
 - No evasion technique testing
 
 ### Enhancements TODO
 
 #### High Priority
-- [ ] **Expand payload library to 100+**
-  - Add 10+ more instruction override variants
-  - Add 10+ more prompt extraction techniques
-  - Add encoding bypass variants (base64, hex, unicode)
-  - Add multi-language payloads (Spanish, Chinese, etc.)
+- [x] ~~**Expand payload library to 100+**~~ ✅ Done - now 128 payloads
+  - ✅ Added encoding bypass variants (base64, hex, unicode, ROT13)
+  - ✅ Added multi-language payloads (8 languages)
+  - ✅ Added token splitting techniques
+  - ✅ Added roleplay/persona manipulation
   
 - [ ] **Payload mutation engine** - Generate variants automatically
   ```python
@@ -337,13 +354,21 @@ AgentSentinel is a comprehensive security framework for AI agents, providing pro
 ### Enhancements TODO
 
 #### High Priority
-- [ ] **Deploy to devnet** - Build and deploy with real program ID
+- [x] **Install Solana & Anchor CLIs** ✅ Done
+  - Solana CLI 3.0.13
+  - Anchor CLI 0.32.1
+- [x] **Configure devnet** ✅ Done
+- [x] **Generate keypair** ✅ Done
+  - Address: `GL6A46QqH5VPADh4HSvxbcoSBvLmFX6khwnw6H3VLTTe`
+- [x] **Build program** ✅ Done (`anchor build`)
+- [ ] **Deploy to devnet** - ⚠️ BLOCKED on faucet rate limits
   ```bash
-  anchor build
+  # Needs ~2 SOL for deployment
+  # Faucet at https://faucet.solana.com is rate-limited
+  # Address: GL6A46QqH5VPADh4HSvxbcoSBvLmFX6khwnw6H3VLTTe
   anchor deploy --provider.cluster devnet
-  solana program show <PROGRAM_ID>
   ```
-- [ ] **Update program ID** - Replace placeholder in code
+- [ ] **Update program ID** - Replace placeholder after deploy
 - [ ] **Integration tests** - Test with local validator
   ```typescript
   describe("agent_registry", () => {
@@ -577,18 +602,22 @@ poetry shell
 
 ## Priority Roadmap
 
-### Phase 1: Hackathon Submission (Immediate)
-1. [x] Complete all core functionality
-2. [ ] Deploy Solana program to devnet
-3. [ ] Create demo video
-4. [ ] Polish README with examples
-5. [ ] Submit to Colosseum
+### Phase 1: Hackathon Submission (Immediate) 🎯
+1. [x] Complete all core functionality ✅
+2. [x] Fix PyO3 bindings (Python can use Rust core) ✅
+3. [x] Expand payload library to 100+ ✅ (now 128)
+4. [x] Polish README with examples ✅
+5. [x] Add executive summary for general audience ✅
+6. [x] Create demo screenplay ✅
+7. [ ] Deploy Solana program to devnet (blocked on faucet)
+8. [ ] Record demo video
+9. [ ] Submit to hackathon
 
 ### Phase 2: Beta Release (2 weeks)
-1. [ ] Fix SDK bindings (Rust → Python/Node.js)
+1. [ ] Fix Node.js SDK bindings (NAPI)
 2. [ ] Add authentication to API
 3. [ ] Integration tests
-4. [ ] Expand payload library to 100+
+4. [x] ~~Expand payload library to 100+~~ ✅ Done
 
 ### Phase 3: Package Publishing (1 month)
 1. [ ] Publish Python package to PyPI (`pip install agentsentinel`)
