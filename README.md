@@ -568,7 +568,42 @@ Built for the Solana AI Hackathon — securing the next generation of autonomous
 
 ### Built With AI
 
-This project was developed with assistance from **Clawdbot** (Claude-based coding assistant), demonstrating the very use case we're protecting: AI agents building software.
+This project was developed using **[OpenClaw](https://github.com/clawdbot/clawdbot)**, an open-source AI coding assistant framework, demonstrating the very use case we're protecting: AI agents building software.
+
+#### AI-Assisted Development Stack
+
+| Component | Model | Role |
+|-----------|-------|------|
+| Main orchestrator | **Claude Opus 4** | Architecture, code review, complex tasks |
+| Parallel sub-agents | **Claude Opus 4** | Concurrent feature development |
+| Code generation | **Gemini** | Payload expansion, boilerplate |
+
+#### Parallel Development with Sub-Agents
+
+We used spawned sub-agents for parallel development:
+- **solana-deploy** — Installed toolchain, configured devnet, built program
+- **payloads-expansion** — Expanded red team suite from 51 → 128 payloads
+
+Sub-agents were configured using the **[AI-Assisted Development Framework](https://github.com/joaoariedi/ai-assisted-development-framework)** — a structured approach to multi-agent software development with Claude.
+
+```
+┌─────────────────────────────────────────────┐
+│           OpenClaw (Main Agent)             │
+│              Claude Opus 4                  │
+├─────────────────────────────────────────────┤
+│                    │                        │
+│         ┌─────────┴─────────┐               │
+│         ▼                   ▼               │
+│  ┌─────────────┐    ┌─────────────┐         │
+│  │ Sub-Agent 1 │    │ Sub-Agent 2 │         │
+│  │   Solana    │    │  Payloads   │         │
+│  │   Deploy    │    │  Expansion  │         │
+│  └─────────────┘    └─────────────┘         │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+This meta-approach — using AI agents to build security tools for AI agents — validates the real-world need for AgentSentinel.
 
 ---
 
