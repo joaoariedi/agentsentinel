@@ -91,17 +91,40 @@ AgentSentinel provides comprehensive, multi-layered security for AI agents:
 
 ### Installation
 
+**Prerequisites:**
+- [asdf](https://asdf-vm.com/) - Version manager (with python and poetry plugins)
+- [Poetry](https://python-poetry.org/) - Python package manager
+
 ```bash
+# Install asdf plugins (if not already installed)
+asdf plugin add python
+asdf plugin add poetry
+
 # Clone the repository
 git clone https://github.com/joaoariedi/agentsentinel.git
 cd agentsentinel
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Install Python and Poetry versions via asdf
+asdf install
 
-# Install in development mode
-pip install -e ".[dev]"
+# Install project dependencies
+poetry install
+
+# Activate the virtual environment
+poetry shell
+```
+
+**Running commands:**
+
+```bash
+# Run the API server
+poetry run agentsentinel-api
+
+# Run tests
+poetry run pytest
+
+# Run linter
+poetry run ruff check src/
 ```
 
 ### Python SDK

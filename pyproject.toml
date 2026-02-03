@@ -1,21 +1,16 @@
-[project]
+[tool.poetry]
 name = "agentsentinel"
 version = "0.1.0"
 description = "Comprehensive security framework for AI agents - Prompt injection detection, behavioral monitoring, and on-chain security attestations"
 readme = "README.md"
-license = {text = "MIT"}
-requires-python = ">=3.8"
-authors = [
-    {name = "AgentSentinel Contributors"}
-]
+license = "MIT"
+authors = ["AgentSentinel Contributors"]
 keywords = ["security", "ai", "agent", "prompt-injection", "llm", "solana"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -23,48 +18,39 @@ classifiers = [
     "Topic :: Security",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
+packages = [{include = "agentsentinel", from = "src"}]
 
-dependencies = [
-    "pydantic>=2.0",
-    "httpx>=0.25",
-    "structlog>=24.0",
-    "fastapi>=0.109",
-    "uvicorn>=0.27",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=8.0",
-    "pytest-asyncio>=0.23",
-    "pytest-cov>=4.1",
-    "ruff>=0.2",
-    "mypy>=1.8",
-]
-wazuh = [
-    "wazuh-api>=4.0",
-]
-full = [
-    "agentsentinel[dev,wazuh]",
-]
-
-[project.scripts]
-agentsentinel-api = "agentsentinel.api.main:main"
-[project.urls]
+[tool.poetry.urls]
 Homepage = "https://github.com/joaoariedi/agentsentinel"
 Documentation = "https://github.com/joaoariedi/agentsentinel#readme"
 Repository = "https://github.com/joaoariedi/agentsentinel"
 Changelog = "https://github.com/joaoariedi/agentsentinel/blob/main/CHANGELOG.md"
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+[tool.poetry.dependencies]
+python = "^3.10"
+pydantic = "^2.0"
+httpx = "^0.25"
+structlog = "^24.0"
+fastapi = "^0.109"
+uvicorn = "^0.27"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/agentsentinel"]
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+pytest-asyncio = "^0.23"
+pytest-cov = "^4.1"
+ruff = "^0.2"
+mypy = "^1.8"
+
+[tool.poetry.scripts]
+agentsentinel-api = "agentsentinel.api.main:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 line-length = 100
-target-version = "py38"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
@@ -74,5 +60,5 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.10"
 strict = true
