@@ -3,13 +3,13 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-agent_registry = "AgntRgstry1111111111111111111111111111111"
+agent_registry = "11111111111111111111111111111111"
 
 [programs.devnet]
-agent_registry = "AgntRgstry1111111111111111111111111111111"
+agent_registry = "11111111111111111111111111111111"
 
 [programs.mainnet]
-agent_registry = "AgntRgstry1111111111111111111111111111111"
+agent_registry = "11111111111111111111111111111111"
 
 [registry]
 url = "https://api.apr.dev"

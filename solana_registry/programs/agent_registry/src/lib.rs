@@ -18,32 +18,257 @@
 
 use anchor_lang::prelude::*;
 
-pub mod errors;
-pub mod state;
-
-use errors::RegistryError;
-use state::*;
-
 // Program ID - will be updated after deployment
-declare_id!("AgntRgstry1111111111111111111111111111111");
+// This is a placeholder - run `anchor keys list` after build to get actual ID
+declare_id!("11111111111111111111111111111111");
+
+// ============================================
+// Error Definitions
+// ============================================
+
+/// Custom error codes for the Agent Registry program
+#[error_code]
+pub enum RegistryError {
+    #[msg("Agent ID exceeds maximum length of 64 characters")]
+    AgentIdTooLong,
+
+    #[msg("Name exceeds maximum length of 128 characters")]
+    NameTooLong,
+
+    #[msg("Description exceeds maximum length of 512 characters")]
+    DescriptionTooLong,
+
+    #[msg("URL exceeds maximum length of 256 characters")]
+    UrlTooLong,
+
+    #[msg("Report hash exceeds maximum length of 64 characters")]
+    HashTooLong,
+
+    #[msg("Scanner version exceeds maximum length of 32 characters")]
+    VersionTooLong,
+
+    #[msg("Notes exceed maximum length of 256 characters")]
+    NotesTooLong,
+
+    #[msg("Invalid score: must be between 0 and 100")]
+    InvalidScore,
+
+    #[msg("Unauthorized action - caller does not have permission")]
+    Unauthorized,
+
+    #[msg("An attestation from this auditor already exists for this agent")]
+    AttestationExists,
+
+    #[msg("Agent not found in the registry")]
+    AgentNotFound,
+
+    #[msg("Auditor is not verified and cannot perform this action")]
+    AuditorNotVerified,
+
+    #[msg("Auditor not found in the registry")]
+    AuditorNotFound,
+
+    #[msg("Attestation not found")]
+    AttestationNotFound,
+
+    #[msg("Attestation has already been disputed")]
+    AttestationAlreadyDisputed,
+
+    #[msg("Agent is not active")]
+    AgentNotActive,
+
+    #[msg("Cannot dispute own attestation")]
+    CannotDisputeOwnAttestation,
+
+    #[msg("Invalid PDA derivation")]
+    InvalidPDA,
+
+    #[msg("Arithmetic overflow occurred")]
+    ArithmeticOverflow,
+
+    #[msg("Required string field is empty")]
+    EmptyRequiredField,
+}
+
+// ============================================
+// State Definitions
+// ============================================
+
+/// Breakdown of security scores across different categories
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Debug, PartialEq)]
+pub struct SecurityScores {
+    /// Overall security score (0-100)
+    pub overall: u8,
+    /// Resistance to prompt injection attacks (0-100)
+    pub injection_resistance: u8,
+    /// Compliance with expected behavior (0-100)
+    pub behavior_compliance: u8,
+    /// Infrastructure hardening score (0-100)
+    pub infra_hardening: u8,
+    /// Data protection and privacy score (0-100)
+    pub data_protection: u8,
+}
+
+impl SecurityScores {
+    pub const SIZE: usize = 5;
+
+    pub fn is_valid(&self) -> bool {
+        self.overall <= 100
+            && self.injection_resistance <= 100
+            && self.behavior_compliance <= 100
+            && self.infra_hardening <= 100
+            && self.data_protection <= 100
+    }
+}
+
+/// Status of a security attestation
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Debug, Default)]
+pub enum AttestationStatus {
+    #[default]
+    Valid,
+    Superseded,
+    Disputed,
+    Expired,
+}
+
+impl AttestationStatus {
+    pub const SIZE: usize = 1;
+}
+
+/// Registered agent in the AgentSentinel system
+#[account]
+pub struct Agent {
+    pub agent_id: String,
+    pub owner: Pubkey,
+    pub name: String,
+    pub description: String,
+    pub repo_url: String,
+    pub homepage_url: String,
+    pub created_at: i64,
+    pub updated_at: i64,
+    pub total_attestations: u32,
+    pub avg_security_score: u8,
+    pub total_critical_vulns: u32,
+    pub is_active: bool,
+    pub bump: u8,
+}
+
+impl Agent {
+    pub const MAX_AGENT_ID_LEN: usize = 64;
+    pub const MAX_NAME_LEN: usize = 128;
+    pub const MAX_DESC_LEN: usize = 512;
+    pub const MAX_URL_LEN: usize = 256;
+
+    pub const SPACE: usize = 8
+        + 4 + Self::MAX_AGENT_ID_LEN
+        + 32
+        + 4 + Self::MAX_NAME_LEN
+        + 4 + Self::MAX_DESC_LEN
+        + 4 + Self::MAX_URL_LEN
+        + 4 + Self::MAX_URL_LEN
+        + 8 + 8 + 4 + 1 + 4 + 1 + 1;
+
+    pub const SEED_PREFIX: &'static [u8] = b"agent";
+}
+
+/// Security attestation for an agent
+#[account]
+pub struct Attestation {
+    pub agent: Pubkey,
+    pub auditor: Pubkey,
+    pub auditor_authority: Pubkey,
+    pub timestamp: i64,
+    pub scores: SecurityScores,
+    pub report_hash: String,
+    pub vulns_critical: u8,
+    pub vulns_high: u8,
+    pub vulns_medium: u8,
+    pub vulns_low: u8,
+    pub payloads_tested: u16,
+    pub scanner_version: String,
+    pub status: AttestationStatus,
+    pub notes: String,
+    pub bump: u8,
+}
+
+impl Attestation {
+    pub const MAX_HASH_LEN: usize = 64;
+    pub const MAX_VERSION_LEN: usize = 32;
+    pub const MAX_NOTES_LEN: usize = 256;
+
+    pub const SPACE: usize = 8
+        + 32 + 32 + 32 + 8
+        + SecurityScores::SIZE
+        + 4 + Self::MAX_HASH_LEN
+        + 1 + 1 + 1 + 1 + 2
+        + 4 + Self::MAX_VERSION_LEN
+        + AttestationStatus::SIZE
+        + 4 + Self::MAX_NOTES_LEN
+        + 1;
+
+    pub const SEED_PREFIX: &'static [u8] = b"attestation";
+}
+
+/// Registered auditor who can submit security attestations
+#[account]
+pub struct Auditor {
+    pub authority: Pubkey,
+    pub name: String,
+    pub audits_performed: u32,
+    pub avg_score_given: u8,
+    pub is_verified: bool,
+    pub created_at: i64,
+    pub profile_url: String,
+    pub bump: u8,
+}
+
+impl Auditor {
+    pub const MAX_NAME_LEN: usize = 128;
+    pub const MAX_URL_LEN: usize = 256;
+
+    pub const SPACE: usize = 8
+        + 32
+        + 4 + Self::MAX_NAME_LEN
+        + 4 + 1 + 1 + 8
+        + 4 + Self::MAX_URL_LEN
+        + 1;
+
+    pub const SEED_PREFIX: &'static [u8] = b"auditor";
+}
+
+/// Global registry configuration
+#[account]
+pub struct RegistryConfig {
+    pub admin: Pubkey,
+    pub admin_backup: Pubkey,
+    pub registration_paused: bool,
+    pub min_secure_score: u8,
+    pub total_agents: u64,
+    pub total_auditors: u64,
+    pub total_attestations: u64,
+    pub bump: u8,
+}
+
+impl RegistryConfig {
+    pub const SPACE: usize = 8 + 32 + 32 + 1 + 1 + 8 + 8 + 8 + 1;
+    pub const SEED_PREFIX: &'static [u8] = b"config";
+}
+
+// ============================================
+// Program Instructions
+// ============================================
 
 #[program]
 pub mod agent_registry {
     use super::*;
 
-    // ============================================
-    // Initialization
-    // ============================================
-
     /// Initialize the registry configuration
-    ///
-    /// Must be called once by the deployer to set up the admin.
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
         let config = &mut ctx.accounts.config;
         let admin = &ctx.accounts.admin;
 
         config.admin = admin.key();
-        config.admin_backup = admin.key(); // Initially same as primary
+        config.admin_backup = admin.key();
         config.registration_paused = false;
         config.min_secure_score = 70;
         config.total_agents = 0;
@@ -59,18 +284,7 @@ pub mod agent_registry {
         Ok(())
     }
 
-    // ============================================
-    // Agent Management
-    // ============================================
-
     /// Register a new agent in the registry
-    ///
-    /// # Arguments
-    /// * `agent_id` - Unique identifier (used in PDA seed)
-    /// * `name` - Human-readable display name
-    /// * `description` - What the agent does
-    /// * `repo_url` - GitHub repository URL
-    /// * `homepage_url` - Documentation or homepage URL
     pub fn register_agent(
         ctx: Context<RegisterAgent>,
         agent_id: String,
@@ -79,7 +293,6 @@ pub mod agent_registry {
         repo_url: String,
         homepage_url: String,
     ) -> Result<()> {
-        // Validate input lengths
         require!(
             agent_id.len() <= Agent::MAX_AGENT_ID_LEN,
             RegistryError::AgentIdTooLong
@@ -101,7 +314,6 @@ pub mod agent_registry {
         let config = &mut ctx.accounts.config;
         let clock = Clock::get()?;
 
-        // Populate agent data
         agent.agent_id = agent_id.clone();
         agent.owner = ctx.accounts.owner.key();
         agent.name = name;
@@ -116,7 +328,6 @@ pub mod agent_registry {
         agent.is_active = true;
         agent.bump = ctx.bumps.agent;
 
-        // Update global stats
         config.total_agents = config
             .total_agents
             .checked_add(1)
@@ -133,8 +344,6 @@ pub mod agent_registry {
     }
 
     /// Update an existing agent's information
-    ///
-    /// Only the agent owner can call this.
     pub fn update_agent(
         ctx: Context<UpdateAgent>,
         name: Option<String>,
@@ -146,7 +355,6 @@ pub mod agent_registry {
         let agent = &mut ctx.accounts.agent;
         let clock = Clock::get()?;
 
-        // Update fields if provided
         if let Some(n) = name {
             require!(n.len() <= Agent::MAX_NAME_LEN, RegistryError::NameTooLong);
             agent.name = n;
@@ -181,14 +389,7 @@ pub mod agent_registry {
         Ok(())
     }
 
-    // ============================================
-    // Auditor Management
-    // ============================================
-
     /// Register as an auditor
-    ///
-    /// Anyone can register as an auditor, but must be verified
-    /// by admin to be considered trusted.
     pub fn register_auditor(
         ctx: Context<RegisterAuditor>,
         name: String,
@@ -217,7 +418,6 @@ pub mod agent_registry {
         auditor.profile_url = profile_url;
         auditor.bump = ctx.bumps.auditor;
 
-        // Update global stats
         config.total_auditors = config
             .total_auditors
             .checked_add(1)
@@ -234,11 +434,8 @@ pub mod agent_registry {
     }
 
     /// Verify an auditor (admin only)
-    ///
-    /// Verified auditors are considered trusted by the ecosystem.
     pub fn verify_auditor(ctx: Context<VerifyAuditor>) -> Result<()> {
         let auditor = &mut ctx.accounts.auditor;
-
         auditor.is_verified = true;
 
         emit!(AuditorVerified {
@@ -253,7 +450,6 @@ pub mod agent_registry {
     /// Revoke auditor verification (admin only)
     pub fn revoke_auditor_verification(ctx: Context<VerifyAuditor>) -> Result<()> {
         let auditor = &mut ctx.accounts.auditor;
-
         auditor.is_verified = false;
 
         emit!(AuditorVerificationRevoked {
@@ -265,14 +461,7 @@ pub mod agent_registry {
         Ok(())
     }
 
-    // ============================================
-    // Attestation Management
-    // ============================================
-
     /// Submit a security attestation for an agent
-    ///
-    /// Only registered auditors can submit attestations.
-    /// Each auditor can only have one active attestation per agent.
     pub fn submit_attestation(
         ctx: Context<SubmitAttestation>,
         scores: SecurityScores,
@@ -285,7 +474,6 @@ pub mod agent_registry {
         scanner_version: String,
         notes: String,
     ) -> Result<()> {
-        // Validate inputs
         require!(scores.is_valid(), RegistryError::InvalidScore);
         require!(
             report_hash.len() <= Attestation::MAX_HASH_LEN,
@@ -307,10 +495,8 @@ pub mod agent_registry {
         let config = &mut ctx.accounts.config;
         let clock = Clock::get()?;
 
-        // Ensure agent is active
         require!(agent.is_active, RegistryError::AgentNotActive);
 
-        // Record attestation
         attestation.agent = agent.key();
         attestation.auditor = auditor.key();
         attestation.auditor_authority = ctx.accounts.authority.key();
@@ -327,7 +513,7 @@ pub mod agent_registry {
         attestation.notes = notes;
         attestation.bump = ctx.bumps.attestation;
 
-        // Update agent aggregate stats
+        // Update agent stats
         let old_total = agent.total_attestations as u64;
         let old_avg = agent.avg_security_score as u64;
         agent.total_attestations = agent
@@ -335,7 +521,6 @@ pub mod agent_registry {
             .checked_add(1)
             .ok_or(RegistryError::ArithmeticOverflow)?;
 
-        // Calculate new average: (old_avg * old_total + new_score) / new_total
         let new_total = agent.total_attestations as u64;
         let new_avg = old_avg
             .checked_mul(old_total)
@@ -343,7 +528,6 @@ pub mod agent_registry {
             .and_then(|x| x.checked_div(new_total))
             .ok_or(RegistryError::ArithmeticOverflow)? as u8;
         agent.avg_security_score = new_avg;
-
         agent.total_critical_vulns = agent
             .total_critical_vulns
             .checked_add(vulns_critical as u32)
@@ -366,7 +550,6 @@ pub mod agent_registry {
             .ok_or(RegistryError::ArithmeticOverflow)? as u8;
         auditor.avg_score_given = auditor_new_avg;
 
-        // Update global stats
         config.total_attestations = config
             .total_attestations
             .checked_add(1)
@@ -389,19 +572,14 @@ pub mod agent_registry {
     }
 
     /// Dispute an attestation
-    ///
-    /// Can be called by the agent owner or a verified auditor.
-    /// Disputed attestations are marked and excluded from aggregate calculations.
     pub fn dispute_attestation(ctx: Context<DisputeAttestation>, reason: String) -> Result<()> {
         let attestation = &mut ctx.accounts.attestation;
 
-        // Ensure not already disputed
         require!(
             attestation.status != AttestationStatus::Disputed,
             RegistryError::AttestationAlreadyDisputed
         );
 
-        // Cannot dispute your own attestation
         require!(
             ctx.accounts.disputer.key() != attestation.auditor_authority,
             RegistryError::CannotDisputeOwnAttestation
@@ -418,10 +596,6 @@ pub mod agent_registry {
 
         Ok(())
     }
-
-    // ============================================
-    // Admin Functions
-    // ============================================
 
     /// Update the admin (admin only)
     pub fn update_admin(ctx: Context<UpdateConfig>, new_admin: Pubkey) -> Result<()> {
@@ -591,7 +765,6 @@ pub struct DisputeAttestation<'info> {
     #[account(mut)]
     pub attestation: Account<'info, Attestation>,
 
-    /// Must be either the agent owner or a verified auditor
     pub disputer: Signer<'info>,
 }
 
