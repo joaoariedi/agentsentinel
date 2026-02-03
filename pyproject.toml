@@ -28,6 +28,8 @@ dependencies = [
     "pydantic>=2.0",
     "httpx>=0.25",
     "structlog>=24.0",
+    "fastapi>=0.109",
+    "uvicorn>=0.27",
 ]
 
 [project.optional-dependencies]
@@ -46,8 +48,7 @@ full = [
 ]
 
 [project.scripts]
-agentsentinel-redteam = "agentsentinel.red_team.cli:main"
-
+agentsentinel-api = "agentsentinel.api.main:main"
 [project.urls]
 Homepage = "https://github.com/joaoariedi/agentsentinel"
 Documentation = "https://github.com/joaoariedi/agentsentinel#readme"

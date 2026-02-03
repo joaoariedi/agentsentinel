@@ -1,0 +1,46 @@
+{
+  "name": "@agentsentinel/sdk",
+  "version": "0.1.0",
+  "description": "High-performance AI agent security framework",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "index.node"
+  ],
+  "napi": {
+    "name": "agentsentinel",
+    "triples": {
+      "defaults": true,
+      "additional": [
+        "x86_64-unknown-linux-musl",
+        "aarch64-unknown-linux-gnu",
+        "aarch64-apple-darwin",
+        "aarch64-unknown-linux-musl"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi prepublish -t npm",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^2.18.0",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">= 16"
+  },
+  "keywords": [
+    "security",
+    "ai",
+    "agent",
+    "prompt-injection",
+    "llm",
+    "rust"
+  ],
+  "license": "MIT"
+}

@@ -15,21 +15,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Open source strategy
 
 ### Phase 1: Rust Core & Input Shield ✅
-- `agentsentinel-core` crate with shared types:
-  - `ThreatLevel` enum (None, Low, Medium, High, Critical)
-  - `ThreatCategory` enum (7 categories)
-  - `Threat` struct with builder pattern
-  - `ThreatAssessment` struct
-  - `ShieldConfig` configuration
-  - Comprehensive error types
-- `agentsentinel-input-shield` crate:
-  - Aho-Corasick pattern matcher (O(n) complexity)
-  - 90+ injection patterns across all threat categories
-  - Canary token system for prompt leak detection
-  - `InputShield` main API
-  - Global `analyze()` and `should_block()` functions
-- 32 unit tests, all passing
-- Doc tests for public APIs
+- `agentsentinel-core` crate with shared types
+- `agentsentinel-input-shield` crate with 110+ patterns
+- 32 unit tests passing
+
+### Phase 2: Behavior Monitor ✅
+- Python behavior monitoring with action logging
+- Behavioral baseline learning
+- Anomaly detection (6 checks)
+- Transaction simulator for Solana
+- 62 unit tests passing
+
+### Phase 3: Infrastructure Monitor ✅
+- OSquery integration with custom queries
+- Wazuh rules (12 custom rules)
+- Unified InfrastructureMonitor class
+- 29 unit tests passing
+
+### Phase 4: Red Team Suite ✅
+- 50+ injection payloads across 8 categories
+- AgentScanner with async HTTP testing
+- ReportGenerator (markdown/JSON)
+- CLI interface
+
+### Phase 5: Solana Registry ✅
+- Anchor program with Agent/Auditor/Attestation accounts
+- TypeScript SDK
+
+### Phase 6: SDKs 🚧
+- Python/Node.js bindings (TODO: fix compatibility)
+
+### Phase 7: API & Integration ✅
+- FastAPI server with all endpoints
+- Demo scripts (3 scenarios)
 
 ---
 

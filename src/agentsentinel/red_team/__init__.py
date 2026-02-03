@@ -1,67 +1,33 @@
 """
-AgentSentinel Red Team Suite
+Red Team Suite - Automated Security Auditing
 
-Comprehensive security testing framework for AI agents with 50+ prompt injection payloads.
+Provides automated security auditing capabilities for AI agents:
+- 50+ injection payloads
+- Automated scanning
+- Security scoring
+- Detailed vulnerability reports
 
-Quick Start:
+Example:
     >>> from agentsentinel.red_team import AgentScanner, ReportGenerator
-    >>> import asyncio
-    >>>
     >>> scanner = AgentScanner()
-    >>> report = asyncio.run(scanner.scan("https://api.example.com/chat"))
-    >>> print(f"Security Score: {report.security_score:.1f}/100")
-
-CLI Usage:
-    $ agentsentinel-redteam scan https://api.example.com/chat --quick
-    $ agentsentinel-redteam list -v
-    $ agentsentinel-redteam info io-001
+    >>> report = await scanner.scan("https://agent-api.example.com/chat")
+    >>> print(f"Security Score: {report.security_score}/100")
 """
 
-from .payloads import (
-    PAYLOAD_LIBRARY,
-    Payload,
-    PayloadCategory,
-    Severity,
-    get_all_tags,
-    get_payload_by_id,
-    get_payload_count_by_category,
-    get_payload_count_by_severity,
-    get_payloads_by_category,
-    get_payloads_by_severity,
-    get_payloads_by_tags,
-)
-from .reporter import (
-    ReportGenerator,
-    ReportSection,
-    save_report,
-)
-from .scanner import (
-    AgentScanner,
-    ScanReport,
-    ScanResult,
-    ScanStatus,
-)
+from . import payloads
+from . import scanner
+from . import reports
+from .scanner import AgentScanner, ScanReport, VulnerabilityResult, ScanStatus
+from .reports import ReportGenerator
 
 __all__ = [
     # Payloads
-    "Payload",
-    "PayloadCategory",
-    "Severity",
-    "PAYLOAD_LIBRARY",
-    "get_payloads_by_category",
-    "get_payloads_by_severity",
-    "get_payloads_by_tags",
-    "get_payload_by_id",
-    "get_all_tags",
-    "get_payload_count_by_category",
-    "get_payload_count_by_severity",
+    "payloads",
     # Scanner
     "AgentScanner",
     "ScanReport",
-    "ScanResult",
+    "VulnerabilityResult",
     "ScanStatus",
-    # Reporter
+    # Reports
     "ReportGenerator",
-    "ReportSection",
-    "save_report",
 ]

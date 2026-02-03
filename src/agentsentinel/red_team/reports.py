@@ -4,12 +4,15 @@ Report Generator - Security Audit Reports
 Generates detailed reports in various formats from scan results.
 """
 
+from . import scanner
+from . import payloads
+
 import json
 from datetime import datetime
 from typing import Any
 
-from .scanner import ScanReport, VulnerabilityResult
-from .payloads import SeverityLevel
+from . import scanner
+from . import payloads
 
 
 class ReportGenerator:
@@ -22,7 +25,7 @@ class ReportGenerator:
     - Summary for quick overview
     """
     
-    def generate_markdown(self, report: ScanReport) -> str:
+    def generate_markdown(self, report: scanner.ScanReport) -> str:
         """
         Generate a detailed Markdown report.
         
@@ -56,13 +59,13 @@ class ReportGenerator:
         lines.append(f"|--------|-------|")
         lines.append(f"| Security Score | **{report.security_score:.1f}/100** |")
         lines.append(f"| Payloads Tested | {report.payloads_tested} |")
-        lines.append(f"| Vulnerabilities Found | {report.vulnerabilities_found} |")
+        lines.append(f"| Vulnerabilities Found | **{report.vulnerabilities_found}** |")
         
         # Count by severity
-        critical = len(report.get_by_severity(SeverityLevel.CRITICAL))
-        high = len(report.get_by_severity(SeverityLevel.HIGH))
-        medium = len(report.get_by_severity(SeverityLevel.MEDIUM))
-        low = len(report.get_by_severity(SeverityLevel.LOW))
+        critical = len([1 for res in report.results if res.payload.severity == payloads.Severity.CRITICAL])
+        high = len([1 for res in report.results if res.payload.severity == payloads.Severity.HIGH])
+        medium = len([1 for res in report.results if res.payload.severity == payloads.Severity.MEDIUM])
+        low = len([1 for res in report.results if res.payload.severity == payloads.Severity.LOW])
         
         lines.append(f"| Critical | {critical} |")
         lines.append(f"| High | {high} |")
@@ -92,17 +95,16 @@ class ReportGenerator:
             lines.append("")
             
             vulns = sorted(
-                report.get_vulnerabilities(),
+                report.results,
                 key=lambda v: ["critical", "high", "medium", "low", "info"].index(v.payload.severity.value)
             )
             
             for i, vuln in enumerate(vulns, 1):
                 severity_emoji = {
-                    SeverityLevel.CRITICAL: "🔴",
-                    SeverityLevel.HIGH: "🟠",
-                    SeverityLevel.MEDIUM: "🟡",
-                    SeverityLevel.LOW: "🟢",
-                    SeverityLevel.INFO: "🔵",
+                    payloads.Severity.CRITICAL: "🔴",
+                    payloads.Severity.HIGH: "🟠",
+                    payloads.Severity.MEDIUM: "🟡",
+                    payloads.Severity.LOW: "🟢",
                 }.get(vuln.payload.severity, "⚪")
                 
                 lines.append(f"### {i}. {severity_emoji} {vuln.payload.name}")
@@ -174,7 +176,7 @@ class ReportGenerator:
         
         return "\n".join(lines)
     
-    def generate_json(self, report: ScanReport) -> str:
+    def generate_json(self, report: scanner.ScanReport) -> str:
         """
         Generate a JSON report.
         
@@ -194,10 +196,10 @@ class ReportGenerator:
             "payloads_tested": report.payloads_tested,
             "vulnerabilities_found": report.vulnerabilities_found,
             "summary": {
-                "critical": len(report.get_by_severity(SeverityLevel.CRITICAL)),
-                "high": len(report.get_by_severity(SeverityLevel.HIGH)),
-                "medium": len(report.get_by_severity(SeverityLevel.MEDIUM)),
-                "low": len(report.get_by_severity(SeverityLevel.LOW)),
+                "critical": len(report.get_by_severity(payloads.Severity.CRITICAL)),
+                "high": len(report.get_by_severity(payloads.Severity.HIGH)),
+                "medium": len(report.get_by_severity(payloads.Severity.MEDIUM)),
+                "low": len(report.get_by_severity(payloads.Severity.LOW)),
             },
             "vulnerabilities": [
                 {
@@ -225,7 +227,7 @@ class ReportGenerator:
         
         return json.dumps(data, indent=2)
     
-    def generate_summary(self, report: ScanReport) -> str:
+    def generate_summary(self, report: scanner.ScanReport) -> str:
         """
         Generate a brief text summary.
         

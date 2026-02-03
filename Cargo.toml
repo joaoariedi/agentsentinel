@@ -3,6 +3,8 @@ resolver = "2"
 members = [
     "crates/core",
     "crates/input-shield",
+    # "crates/python",   # TODO: Fix PyO3 bindings
+    # "crates/nodejs",   # TODO: Fix NAPI bindings
 ]
 
 [workspace.package]
